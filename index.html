@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050505">
+  <meta name="robots" content="noindex, nofollow">
+  <title>С днём рождения!</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; background: #050505; color: white; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+    main { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 0; position: relative; overflow: hidden; }
+    video { display: block; width: 100vw; height: 100vh; height: 100dvh; object-fit: contain; background: black; }
+    .start { position: absolute; z-index: 2; left: 50%; bottom: max(48px, env(safe-area-inset-bottom) + 38px); transform: translateX(-50%); width: max-content; max-width: calc(100vw - 40px); border: 1px solid rgba(255,255,255,.24); background: rgba(15,15,15,.92); color: white; border-radius: 999px; padding: 17px 26px; font: 600 16px system-ui, sans-serif; cursor: pointer; box-shadow: 0 8px 30px rgba(0,0,0,.55); }
+    .start:hover { background: rgba(40,40,40,.96); }
+    .start:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+    .notice { display: none; position: absolute; top: 24px; max-width: calc(100vw - 36px); padding: 12px 18px; color: white; background: #3b1616; border-radius: 12px; font-size: 14px; text-align: center; }
+    .notice.visible { display: block; }
+  </style>
+</head>
+<body>
+  <main>
+    <video id="greeting" src="./video.mp4" controls playsinline webkit-playsinline autoplay muted preload="auto" aria-label="Видеопоздравление"></video>
+    <button class="start" id="start" type="button">▶ Смотреть со звуком</button>
+    <div class="notice" id="error" role="alert">Видео не загружается. Проверь, что файл называется video.mp4 и лежит рядом с index.html.</div>
+  </main>
+  <script>
+    const video = document.getElementById('greeting');
+    const start = document.getElementById('start');
+    const error = document.getElementById('error');
+    video.play().catch(() => {}); // Browsers may allow muted autoplay; user tap works regardless.
+    start.addEventListener('click', async () => {
+      try {
+        video.pause();
+        video.currentTime = 0;
+        video.muted = false;
+        video.volume = 1;
+        await video.play();
+        start.hidden = true;
+        error.classList.remove('visible');
+      } catch (e) {
+        error.textContent = 'Не удалось запустить видео. Нажми ▶ в самом видеоплеере.';
+        error.classList.add('visible');
+      }
+    });
+    video.addEventListener('error', () => error.classList.add('visible'));
+  </script>
+</body>
+</html>
