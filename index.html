@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="robots" content="noindex, nofollow">
+  <title>С днём рождения!</title>
+  <style>
+    * {box-sizing:border-box}
+    html, body {width:100%;height:100%;margin:0;overflow:hidden;font-family:Arial,Helvetica,sans-serif}
+    #captchaScreen {position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;z-index:3}
+    .captcha {width:304px;min-height:78px;display:flex;align-items:center;padding:12px;background:#fafafa;border:1px solid #d5d5d5;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.1);cursor:pointer;user-select:none;text-align:left;color:#222;font:14px Arial,sans-serif}
+    .captcha:focus-visible {outline:3px solid #4285f4;outline-offset:3px}
+    .checkbox {width:28px;height:28px;flex-shrink:0;margin-right:12px;border:2px solid #555;border-radius:2px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:22px}
+    .captchaText {flex:1;line-height:1.25}
+    .captchaRight {width:55px;text-align:center;font-size:9px;color:#777}
+    .captchaLogo {font-size:24px;margin-bottom:2px;line-height:1}
+    .checked {border-color:transparent;color:#22a447}
+    .spinner {width:23px;height:23px;border:3px solid #ddd;border-top-color:#4285f4;border-radius:50%;animation:spin .6s linear infinite}
+    @keyframes spin {to {transform:rotate(360deg)}}
+    #videoScreen {position:fixed;inset:0;background:#000}
+    #videoScreen[hidden] {display:none}
+    #video {display:block;width:100%;height:100%;height:100dvh;object-fit:contain;background:#000}
+    #error {display:none;position:absolute;left:50%;bottom:max(30px,env(safe-area-inset-bottom));transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);padding:12px 18px;border-radius:9px;background:#321b1b;color:#fff;font:14px Arial,sans-serif;text-align:center}
+    #error.visible {display:block}
+  </style>
+</head>
+<body>
+  <div id="videoScreen" hidden>
+    <video id="video" preload="auto" playsinline webkit-playsinline controls>
+      <source src="./video.mp4" type="video/mp4">
+    </video>
+    <div id="error" role="alert">Видео не удалось запустить. Нажми ▶ на видеоплеере.</div>
+  </div>
+  <div id="captchaScreen">
+    <button class="captcha" id="captcha" type="button" aria-label="Я не робот — открыть видео">
+      <span class="checkbox" id="checkbox" aria-hidden="true"></span>
+      <span class="captchaText" id="captchaText">Я не робот</span>
+      <span class="captchaRight"><span class="captchaLogo" style="display:block" aria-hidden="true">↻</span>проверка</span>
+    </button>
+  </div>
+  <script>
+    const captcha = document.getElementById('captcha');
+    const checkbox = document.getElementById('checkbox');
+    const captchaText = document.getElementById('captchaText');
+    const captchaScreen = document.getElementById('captchaScreen');
+    const videoScreen = document.getElementById('videoScreen');
+    const video = document.getElementById('video');
+    const error = document.getElementById('error');
+    let starting = false;
+
+    captcha.addEventListener('click', () => {
+      if (starting) return;
+      starting = true;
+      checkbox.innerHTML = '<span class="spinner"></span>';
+      captchaText.textContent = 'Проверяем…';
+      videoScreen.hidden = false;
+      video.currentTime = 0;
+      video.muted = false;
+      video.defaultMuted = false;
+      video.volume = 1; // 100% volume in the player (device volume cannot be changed by a website)
+
+      // Start playback immediately inside the click handler. A delay here would
+      // make mobile browsers treat audio as unwanted autoplay.
+      const playback = video.play();
+
+      // Fullscreen is best-effort; mobile browsers may not support this API.
+      if (document.documentElement.requestFullscreen && document.fullscreenEnabled) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+
+      Promise.resolve(playback).then(() => {
+        checkbox.textContent = '✓';
+        checkbox.classList.add('checked');
+        setTimeout(() => {captchaScreen.style.display = 'none';}, 180);
+      }).catch(() => {
+        captchaScreen.style.display = 'none';
+        error.classList.add('visible');
+        starting = false;
+      });
+    });
+
+    video.addEventListener('error', () => {
+      captchaScreen.style.display = 'none';
+      videoScreen.hidden = false;
+      error.textContent = 'Видео не загрузилось. Проверь соединение и обнови страницу.';
+      error.classList.add('visible');
+    });
+  </script>
+</body>
+</html>
